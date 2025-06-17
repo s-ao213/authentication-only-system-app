@@ -6,26 +6,37 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "prisma db seed"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.7.2",
-    "@fortawesome/free-solid-svg-icons": "^6.7.2",
-    "@fortawesome/react-fontawesome": "^0.2.2",
+    "@prisma/client": "^6.9.0",
+    "bcrypt": "^5.1.1",
+    "jose": "^5.9.6",
     "next": "15.3.3",
+    "nodemailer": "^6.9.18",
+    "prisma": "^6.9.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^5.0.2",
     "@types/node": "^20",
+    "@types/nodemailer": "^6.4.15",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.14",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
-    "tailwind-merge": "^3.3.0",
-    "tailwindcss": "^4",
+    "postcss": "^8.4.24",
+    "tailwindcss": "^3.3.2",
+    "tsx": "^4.7.0",
     "typescript": "^5"
   }
 }
