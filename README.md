@@ -7,12 +7,12 @@
 
 ## 📋 概要
 
-このプロジェクトは、**ガチガチにセキュアな設計**を重視した認証専用システムです。現代のWebアプリケーションに必要なセキュリティ機能を網羅的に実装し、実際のプロダクション環境でも使用できるレベルのセキュリティ対策を施しています。
+このプロジェクトは、**セキュアな設計**を重視した認証専用システムです。現代のWebアプリケーションに必要なセキュリティ機能を実装し、実際のプロダクション環境でも使用できるレベルのセキュリティ対策を目標に作成してます。
 
 ### 🎯 プロジェクトの特徴
 
 - **🛡️ 多層防御**: CSP、XSS対策、CSRF対策を含む包括的なセキュリティ
-- **🔒 最新の暗号化**: bcryptによるパスワードハッシュ化（ソルトラウンド10）
+- **🔒 暗号化**: bcryptによるパスワードハッシュ化（ソルトラウンド10）
 - **🍪 セキュアなセッション管理**: JWTとHTTPOnly Cookieの組み合わせ
 - **📧 リアルタイム通知**: ログイン時の自動メール通知
 - **🔑 パスワードリセット**: 秘密の質問による安全なパスワード復旧
@@ -93,7 +93,7 @@ const cspHeader = `
 
 ### 1. ユーザー登録 📝
 
-![ユーザー登録画面](https://via.placeholder.com/800x600/4F46E5/FFFFFF?text=User+Registration+Screen)
+![ユーザー登録画面](new.png)
 
 - **メールアドレス**: 重複チェック付き
 - **パスワード**: 確認入力で入力ミス防止
@@ -102,7 +102,7 @@ const cspHeader = `
 
 ### 2. セキュアログイン 🔑
 
-![ログイン画面](https://via.placeholder.com/800x600/059669/FFFFFF?text=Secure+Login+Screen)
+![ログイン画面](login.png)
 
 - **認証処理**: bcryptによるパスワード照合
 - **セッション作成**: JWT + HTTPOnly Cookie
@@ -111,7 +111,7 @@ const cspHeader = `
 
 ### 3. パスワードリセット 🔄
 
-![パスワードリセット画面](https://via.placeholder.com/800x600/DC2626/FFFFFF?text=Password+Reset+Screen)
+![パスワードリセット画面](password-reset.png)
 
 **2段階認証プロセス**:
 1. **メールアドレス確認**: 登録済みユーザーの検証
@@ -121,7 +121,7 @@ const cspHeader = `
 
 ### ダッシュボード 📊
 
-![ダッシュボード](https://via.placeholder.com/800x600/7C3AED/FFFFFF?text=Dashboard+Screen)
+![ダッシュボード](dashbord.png)
 
 - **ユーザー情報表示**: セッション情報の表示
 - **セキュリティ機能一覧**: 実装機能の説明
@@ -150,7 +150,6 @@ export async function sendLoginNotification(email: string): Promise<void> {
 ```
 
 - **Gmail SMTP**: セキュアなメール送信
-- **アプリパスワード**: OAuth2認証対応
 - **HTML形式**: 視認性の高いメール
 
 ## 🗃️ データベース設計
@@ -191,7 +190,7 @@ CREATE TABLE sessions (
 
 ```bash
 # リポジトリクローン
-git clone <repository-url>
+git clone <https://github.com/s-ao213/authentication-only-system-app.git>
 cd authentication-only-system-app
 
 # 依存関係インストール
@@ -247,37 +246,6 @@ npm run dev
 - **秘密の質問**: 「あなたの好きな色は？」
 - **答え**: `青`
 
-## 🚀 本番デプロイ
-
-### 本番環境設定
-
-1. **環境変数の設定**
-   ```env
-   NODE_ENV="production"
-   DATABASE_URL="postgresql://user:pass@host:port/dbname"
-   SESSION_SECRET="production-secure-32-character-secret"
-   ```
-
-2. **セキュリティ設定の強化**
-   ```typescript
-   // より厳格なCSP（本番環境）
-   const strictCspHeader = `
-     default-src 'self';
-     script-src 'self';
-     style-src 'self';
-     img-src 'self' data:;
-     font-src 'self';
-     connect-src 'self';
-     frame-ancestors 'none';
-   `;
-   ```
-
-3. **データベース移行**
-   ```bash
-   # PostgreSQL使用推奨
-   npx prisma migrate deploy
-   ```
-
 ## 📊 セキュリティ監査
 
 ### 実装済みセキュリティ対策チェックリスト
@@ -311,6 +279,7 @@ npm run dev
    ```bash
    # Gmailアプリパスワードの設定を確認
    # 2段階認証を有効化してからアプリパスワードを生成
+   # アプリパスワードはスペースを入れずに入力
    ```
 
 2. **データベース接続エラー**
@@ -334,18 +303,9 @@ npm run dev
 4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
 5. プルリクエストを作成
 
-## 📝 ライセンス
-
-MIT License - 詳細は [LICENSE](LICENSE) ファイルを参照してください。
 
 ## 👨‍💻 作者
 
 **あなたの名前**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
-
----
-
-<div align="center">
-  <strong>🔐 セキュリティは妥協しない。常に最新のベストプラクティスを採用。</strong>
-</div>
+- GitHub: [@s-ao213](https://github.com/s-ao213)
+- Email: ri22077b@st.omu.ac.jp
