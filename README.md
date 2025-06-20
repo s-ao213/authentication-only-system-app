@@ -13,6 +13,7 @@
 
 - **🛡️ 多層防御**: CSP、XSS対策、CSRF対策を含む包括的なセキュリティ
 - **🔒 暗号化**: bcryptによるパスワードハッシュ化（ソルトラウンド10）
+- **🤖 ボット対策**: reCAPRCHAによるボット対策
 - **🍪 セキュアなセッション管理**: JWTとHTTPOnly Cookieの組み合わせ
 - **📧 リアルタイム通知**: ログイン時の自動メール通知
 - **🔑 パスワードリセット**: 秘密の質問による安全なパスワード復旧
@@ -40,7 +41,26 @@
 
 ## 🔒 セキュリティ機能
 
-### 1. パスワードセキュリティ 🔐
+### 1. Google reCAPTCHA v2 🤖
+
+```typescript
+// ログイン時のreCAPTCHA検証
+async function verifyRecaptcha(token: string): Promise<boolean> {
+  const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`,
+  });
+  const data = await response.json();
+  return data.success === true;
+}
+```
+
+- **「私はロボットではありません」チェックボックス**: ユーザーフレンドリーな認証
+- **サーバーサイド検証**: フロントエンドとバックエンドの双方で認証
+- **CSP対応**: reCAPTCHAドメインを許可したセキュリティポリシー
+
+### 2. パスワードセキュリティ 🔐
 
 ```typescript
 // bcryptによるパスワードハッシュ化（ソルトラウンド10）
@@ -51,43 +71,38 @@ const hashedPassword = await bcrypt.hash(password, 10);
 - **パスワード強度**: 最低6文字以上の制限
 - **秘密の質問**: パスワードリセット用の追加認証
 
-### 2. セッション管理 🍪
+### 3. セッション管理 🍪
 
 ```typescript
-// セキュアなCookie設定
-(await cookieStore).set('session', sessionToken, {
-  httpOnly: true,                           // XSS攻撃防止
-  secure: process.env.NODE_ENV === 'production', // HTTPS必須（本番環境）
-  sameSite: 'lax',                         // CSRF攻撃防止
-  expires: expiresAt,                      // 自動期限切れ（7日間）
-});
+// JWTとHTTPOnly Cookieによるセキュアなセッション
+const sessionToken = await new SignJWT({ userId, email })
+  .setProtectedHeader({ alg: 'HS256' })
+  .setExpirationTime(expiresAt)
+  .sign(secret);
 ```
 
-### 3. CSP（Content Security Policy） 🛡️
+- **HTTPOnly Cookie**: XSS攻撃からの保護
+- **セッション有効期限**: 7日間の自動失効
+- **データベース管理**: セッションテーブルでの一元管理
+
+### 4. セキュリティヘッダー 🛡️
 
 ```typescript
-// 厳格なCSP設定
+// CSP（reCAPTCHA対応）
 const cspHeader = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline';
-  style-src 'self' 'unsafe-inline';
-  img-src 'self' data: https:;
-  font-src 'self';
-  connect-src 'self';
-  frame-ancestors 'none';
-  base-uri 'self';
-  form-action 'self';
-  object-src 'none';
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' 
+             https://www.google.com/recaptcha/ 
+             https://www.gstatic.com/recaptcha/;
+  connect-src 'self' https://www.google.com/recaptcha/;
+  frame-src https://www.google.com/recaptcha/;
 `;
 ```
 
-### 4. セキュリティヘッダー 📡
+- **CSP（Content Security Policy）**: XSS攻撃防止（reCAPTCHA対応済み）
+- **X-Frame-Options**: クリックジャッキング対策
+- **X-Content-Type-Options**: MIME型スニッフィング防止
 
-- **X-Frame-Options**: クリックジャッキング攻撃防止
-- **X-Content-Type-Options**: MIMEタイプスニッフィング攻撃防止
-- **X-XSS-Protection**: ブラウザのXSS保護有効化
-- **Referrer-Policy**: リファラー情報制御
-- **Permissions-Policy**: ブラウザ機能アクセス制限
 
 ## 🌟 主要機能
 
@@ -108,6 +123,7 @@ const cspHeader = `
 - **セッション作成**: JWT + HTTPOnly Cookie
 - **ログイン通知**: 自動メール送信
 - **エラーハンドリング**: セキュリティに配慮したエラーメッセージ
+- **Bot防止機能**:　botからの不正なアクセス攻撃への対策
 
 ### 3. パスワードリセット 🔄
 
@@ -187,37 +203,39 @@ CREATE TABLE sessions (
 ## 🛠️ セットアップ手順
 
 ### 1. 環境構築
-
-```bash
-# リポジトリクローン
-git clone <https://github.com/s-ao213/authentication-only-system-app.git>
-cd authentication-only-system-app
-
-# 依存関係インストール
-npm install
-
-# 環境変数設定
-cp .env.example .env
-```
-
-### 2. 環境変数設定
+`.env`ファイルを作成し、以下の変数を設定
 
 ```env
-# Database
+# データベース（SQLite使用）
 DATABASE_URL="file:./app.db"
 
-# Session Secret（本番環境では32文字以上の安全な文字列を使用）
+# セッション秘密鍵
 SESSION_SECRET="your-very-secure-session-secret-key-change-this-to-something-random"
 
-# SMTP設定（Gmail推奨）
+# メール送信設定（Gmail SMTP例）
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT="587"
 SMTP_USER="your-email@gmail.com"
-SMTP_PASS="your-app-password"  # Gmailアプリパスワード
+SMTP_PASS="your-app-password"
 
-# Environment
+# Google reCAPTCHA v2（重要：実際のキーに置き換える）
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY="your-recaptcha-site-key"
+RECAPTCHA_SECRET_KEY="your-recaptcha-secret-key"
+
+# 環境設定
 NODE_ENV="development"
 ```
+
+### 2. Google reCAPTCHA v2の設定
+
+1. [Google reCAPTCHA](https://www.google.com/recaptcha/)にアクセス
+2. 「Admin Console」から新しいサイトを登録
+3. **reCAPTCHA v2**を選択し、**「私はロボットではありません」チェックボックス**を選択
+4. ドメイン設定:
+   - 開発環境: `localhost`
+   - 本番環境: 実際のドメイン名
+5. サイトキーとシークレットキーを`.env`に設定
+
 
 ### 3. データベース初期化
 
@@ -246,31 +264,39 @@ npm run dev
 - **秘密の質問**: 「あなたの好きな色は？」
 - **答え**: `青`
 
-## 📊 セキュリティ監査
+## 📁 プロジェクト構造
 
-### 実装済みセキュリティ対策チェックリスト
+```
+src/
+├── app/
+│   ├── api/                    # API Routes
+│   │   ├── login/             # ログインAPI（reCAPTCHA検証含む）
+│   │   ├── logout/            # ログアウトAPI
+│   │   ├── signup/            # ユーザー登録API
+│   │   ├── reset-password/    # パスワードリセットAPI
+│   │   └── session/           # セッション確認API
+│   ├── dashboard/             # ダッシュボードページ
+│   ├── login/                # ログインページ（reCAPTCHA統合済み）
+│   ├── signup/               # ユーザー登録ページ
+│   ├── reset-password/       # パスワードリセットページ
+│   ├── layout.tsx           # レイアウト（reCAPTCHAスクリプト読み込み）
+│   └── page.tsx             # ホームページ
+├── lib/                      # ユーティリティライブラリ
+│   ├── auth.ts              # 認証関連の関数
+│   └── mail.ts              # メール送信機能
+└── middleware.ts            # ミドルウェア（CSP設定とreCAPTCHA対応）
+```
+## 🔒 実装済みセキュリティ機能
 
-- ✅ **パスワードハッシュ化** (bcrypt + salt rounds 10)
-- ✅ **セッション管理** (JWT + HTTPOnly Cookie)
-- ✅ **CSP設定** (Content Security Policy)
-- ✅ **セキュリティヘッダー** (X-Frame-Options, X-XSS-Protection等)
-- ✅ **入力バリデーション** (zod)
-- ✅ **SQL インジェクション対策** (Prisma ORM)
-- ✅ **XSS対策** (React + CSP)
-- ✅ **CSRF対策** (SameSite Cookie)
-- ✅ **セッション期限管理** (7日間自動期限切れ)
-- ✅ **パスワードリセット** (秘密の質問による二要素認証)
-
-### セキュリティレベル評価
-
-| 項目 | レベル | 説明 |
-|------|--------|------|
-| 認証 | 🔒🔒🔒🔒🔒 | bcrypt + JWT + 二要素認証 |
-| セッション | 🔒🔒🔒🔒🔒 | HTTPOnly + Secure + SameSite |
-| データ保護 | 🔒🔒🔒🔒🔒 | 暗号化 + ORM + バリデーション |
-| 通信 | 🔒🔒🔒🔒⚪ | HTTPS推奨 + セキュリティヘッダー |
-| 監査 | 🔒🔒🔒⚪⚪ | ログ出力 + エラーハンドリング |
-
+- ✅ **Google reCAPTCHA v2**: ログイン時のボット攻撃対策
+- ✅ **パスワードハッシュ化**: bcryptによる安全なパスワード保存
+- ✅ **セッション管理**: JWT + データベーストークン管理
+- ✅ **CSP**: XSS攻撃防止（reCAPTCHA対応済み）
+- ✅ **セキュリティヘッダー**: 各種Web攻撃対策
+- ✅ **入力値検証**: Zodによる型安全なバリデーション
+- ✅ **秘密の質問**: パスワードリセット時の本人確認
+- ✅ **ログイン通知**: 不正アクセス検知のためのメール通知
+  
 ## 🐛 トラブルシューティング
 
 ### よくある問題と解決方法
@@ -304,9 +330,7 @@ npm run dev
 5. プルリクエストを作成
 
 
-## 👨‍💻 作者
-
-**あなたの名前**
+## 👨‍💻 プロフィール
 - GitHub: [@s-ao213](https://github.com/s-ao213)
 - Email: ri22077b@st.omu.ac.jp
 - Portfolio: https://s-ao213.github.io/portfolio
