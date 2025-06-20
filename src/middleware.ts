@@ -8,11 +8,12 @@ export async function middleware(request: NextRequest) {
   // CSP（Content Security Policy）設定
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'unsafe-eval' 'unsafe-inline';
+    script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/;
     style-src 'self' 'unsafe-inline';
     img-src 'self' data: https:;
     font-src 'self';
-    connect-src 'self';
+    connect-src 'self' https://www.google.com/recaptcha/;
+    frame-src https://www.google.com/recaptcha/;
     frame-ancestors 'none';
     base-uri 'self';
     form-action 'self';
