@@ -309,3 +309,5 @@ npm run dev
 **あなたの名前**
 - GitHub: [@s-ao213](https://github.com/s-ao213)
 - Email: ri22077b@st.omu.ac.jp
+- Portfolio: https://s-ao213.github.io/portfolio
+
